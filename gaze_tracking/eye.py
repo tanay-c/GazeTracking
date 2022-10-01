@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import cv2
-from pupil import Pupil
+from .pupil import Pupil
 
 
 class Eye(object):
@@ -25,7 +25,6 @@ class Eye(object):
     @staticmethod
     def _middle_point(p1, p2):
         """Returns the middle point (x,y) between two points
-
         Arguments:
             p1 (dlib.point): First point
             p2 (dlib.point): Second point
@@ -36,13 +35,14 @@ class Eye(object):
 
     def _isolate(self, frame, landmarks, points):
         """Isolate an eye, to have a frame without other part of the face.
-
         Arguments:
             frame (numpy.ndarray): Frame containing the face
             landmarks (dlib.full_object_detection): Facial landmarks for the face region
             points (list): Points of an eye (from the 68 Multi-PIE landmarks)
         """
-        region = np.array([(landmarks.part(point).x, landmarks.part(point).y) for point in points])
+        region = np.array(
+            [(landmarks.part(point).x, landmarks.part(point).y) for point in points]
+        )
         region = region.astype(np.int32)
         self.landmark_points = region
 
@@ -69,18 +69,18 @@ class Eye(object):
     def _blinking_ratio(self, landmarks, points):
         """Calculates a ratio that can indicate whether an eye is closed or not.
         It's the division of the width of the eye, by its height.
-
         Arguments:
             landmarks (dlib.full_object_detection): Facial landmarks for the face region
             points (list): Points of an eye (from the 68 Multi-PIE landmarks)
-
         Returns:
             The computed ratio
         """
         left = (landmarks.part(points[0]).x, landmarks.part(points[0]).y)
         right = (landmarks.part(points[3]).x, landmarks.part(points[3]).y)
         top = self._middle_point(landmarks.part(points[1]), landmarks.part(points[2]))
-        bottom = self._middle_point(landmarks.part(points[5]), landmarks.part(points[4]))
+        bottom = self._middle_point(
+            landmarks.part(points[5]), landmarks.part(points[4])
+        )
 
         eye_width = math.hypot((left[0] - right[0]), (left[1] - right[1]))
         eye_height = math.hypot((top[0] - bottom[0]), (top[1] - bottom[1]))
@@ -95,7 +95,6 @@ class Eye(object):
     def _analyze(self, original_frame, landmarks, side, calibration):
         """Detects and isolates the eye in a new frame, sends data to the calibration
         and initializes Pupil object.
-
         Arguments:
             original_frame (numpy.ndarray): Frame passed by the user
             landmarks (dlib.full_object_detection): Facial landmarks for the face region
